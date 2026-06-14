@@ -139,20 +139,6 @@ body{display:flex;align-items:center;justify-content:center;background:#050510;f
   </div>
   <div class="cuewrap"><div class="cueline"><span class="cueword">Breathe in</span><span class="count countval">4</span></div></div>
   <div class="stage" id="stage">
-    <span class="star" style="width:4px;height:4px;top:22.2%;left:19.3%"></span>
-    <span class="star" style="width:2px;height:2px;top:8.4%;left:78.3%"></span>
-    <span class="star" style="width:3px;height:3px;top:31.4%;left:9.3%"></span>
-    <span class="star" style="width:3px;height:3px;top:26.9%;left:27.2%"></span>
-    <span class="star" style="width:2px;height:2px;top:27.2%;left:78.8%"></span>
-    <span class="star" style="width:3px;height:3px;top:53.4%;left:61.5%"></span>
-    <span class="star" style="width:2px;height:2px;top:25.8%;left:91.9%"></span>
-    <span class="star" style="width:3px;height:3px;top:27.0%;left:53.6%"></span>
-    <span class="star" style="width:4px;height:4px;top:15.0%;left:57.2%"></span>
-    <span class="star" style="width:3px;height:3px;top:41.6%;left:55.7%"></span>
-    <span class="star" style="width:2px;height:2px;top:35.3%;left:45.9%"></span>
-    <span class="star" style="width:2px;height:2px;top:45.0%;left:13.2%"></span>
-    <span class="star" style="width:2px;height:2px;top:42.5%;left:31.3%"></span>
-    <span class="star" style="width:2px;height:2px;top:11.9%;left:42.8%"></span>
     <div class="gbox"><div class="mglow" id="glow"></div><div class="moon" id="moon"></div></div>
   </div>
   <button class="floatbtn left" id="voiceBtn" aria-label="Toggle guiding voice"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="7" r="3"/><path d="M3 19c0-2.8 2.2-5 5-5s5 2.2 5 5"/><path class="wave" d="M16.5 8.5a5 5 0 0 1 0 7"/><path class="wave" d="M19 6.5a8.5 8.5 0 0 1 0 11"/></svg></button>
@@ -310,5 +296,48 @@ requestAnimationFrame(frame);
 (function(){var b=document.getElementById("cbeach"),f=document.getElementById("cfull"),fi=document.getElementById("cfullimg");if(!b||!f)return;b.addEventListener("click",function(){fi.src=b.src;f.classList.add("show");});f.addEventListener("click",function(){f.classList.remove("show");});})();
 
 (function(){var sB=document.getElementById("statsBtn"),cB=document.getElementById("chatBtn"),hB=document.getElementById("homeBtn"),stats=document.getElementById("stats"),chat=document.getElementById("chat");function active(w){if(sB)sB.classList.toggle("active",w==="stats");if(cB)cB.classList.toggle("active",w==="chat");if(hB)hB.classList.toggle("active",w==="home");}if(sB)sB.addEventListener("click",function(){if(chat)chat.classList.remove("show");active("stats");});if(cB)cB.addEventListener("click",function(){if(stats)stats.classList.remove("show");active("chat");});if(hB)hB.addEventListener("click",function(){active("home");});})();
+
+/* --- starfield: full-width, from 50px above moon max-expansion top down to just above the float buttons, clear of the moon disc --- */
+(function(){
+  var stage=document.getElementById('stage'),
+      moon=document.getElementById('moon'),
+      gbox=stage.querySelector('.gbox'),
+      vbtn=document.getElementById('voiceBtn');
+  var MAXSCALE=0.558+0.73;            /* moon scale at full expansion */
+  function place(){
+    stage.querySelectorAll('.star').forEach(function(s){s.remove();});
+    var sr=stage.getBoundingClientRect();
+    var mr=moon.getBoundingClientRect();
+    var cx=mr.left+mr.width/2, cy=mr.top+mr.height/2;   /* moon centre (centre is scale-invariant) */
+    var maxR=(moon.offsetWidth/2)*MAXSCALE;             /* radius at full expansion */
+    var topY=cy-maxR-50;                                /* 50px above max-expansion top edge */
+    var botY=vbtn.getBoundingClientRect().top-10;       /* just above the two buttons */
+    var tRel=topY-sr.top, bRel=botY-sr.top, W=sr.width, bandH=bRel-tRel;
+    if(bandH<=0||W<=0) return;
+    var target=34;
+    var cols=Math.max(4,Math.round(Math.sqrt(target*W/bandH)));
+    var rows=Math.max(3,Math.round(target/cols));
+    var cellW=W/cols, cellH=bandH/rows, pad=maxR+6, sizes=[2,2,3,3,4];
+    for(var c=0;c<cols;c++)for(var r=0;r<rows;r++){
+      if(Math.random()<0.12) continue;                 /* irregular gaps */
+      var x=(c+0.15+Math.random()*0.7)*cellW;
+      var y=tRel+(r+0.15+Math.random()*0.7)*cellH;
+      var dx=(sr.left+x)-cx, dy=(sr.top+y)-cy;
+      if(dx*dx+dy*dy<pad*pad) continue;                /* keep clear of the moon */
+      var sz=sizes[(Math.random()*sizes.length)|0];
+      var st=document.createElement('span');
+      st.className='star';
+      st.style.width=sz+'px'; st.style.height=sz+'px';
+      st.style.left=(x/W*100).toFixed(2)+'%';
+      st.style.top=y.toFixed(1)+'px';
+      st.style.opacity=(0.4+Math.random()*0.4).toFixed(2);
+      stage.insertBefore(st,gbox);
+    }
+  }
+  function go(){requestAnimationFrame(place);}
+  if(document.readyState!=='loading') go(); else window.addEventListener('DOMContentLoaded',go);
+  var t; window.addEventListener('resize',function(){clearTimeout(t);t=setTimeout(place,200);});
+})();
+
 </script>
 </body></html>
